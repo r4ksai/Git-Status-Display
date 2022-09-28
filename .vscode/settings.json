@@ -3,5 +3,6 @@
         "*.html": "html",
         "random": "cpp",
         "*.tcc": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }
