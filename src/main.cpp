@@ -36,6 +36,10 @@ const char* password = "123456789";
 
 WebServer server(80);
 
+void handleNotFound(){
+  server.send(404, "text/plain", "Not found");
+}
+
 void handleHome() {
   String homePage = "<!DOCTYPE html><html>\n";
   homePage +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
@@ -72,6 +76,7 @@ void setup(void)
 {
   accessPoint();
   server.on("/", handleHome);
+  server.onNotFound(handleNotFound);
   server.begin();
   rawDisplay.begin();
   rawDisplay.control(MD_MAX72XX::INTENSITY, MAX_INTENSITY/15);
