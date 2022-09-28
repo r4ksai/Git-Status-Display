@@ -2,6 +2,8 @@
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 #include <SPI.h>
+#include <WiFi.h>
+#include <WebServer.h>
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4
@@ -9,17 +11,8 @@
 #define CS_PIN    5
 
 MD_MAX72XX rawDisplay = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-MD_Parola display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
-// Sprite Definition
-const uint8_t F_ROCKET = 2;
-const uint8_t W_ROCKET = 11;
-const uint8_t PROGMEM rocket[F_ROCKET * W_ROCKET] =  // rocket
-{
-  0x18, 0x24, 0x42, 0x81, 0x99, 0x18, 0x99, 0x18, 0xa5, 0x5a, 0x81,
-  0x18, 0x24, 0x42, 0x81, 0x18, 0x99, 0x18, 0x99, 0x24, 0x42, 0x99,
-};
-
+// Loading Animation
 #define ANIMATION_DELAY 75	// milliseconds
 #define MAX_FRAMES      4   // number of animation frames
 
@@ -37,30 +30,62 @@ int16_t idx;                // display index (column)
 uint8_t frame;              // current animation frame
 uint8_t deltaFrame;         // the animation frame offset for the next frame
 
-void setup(void)
-{
 
-  rawDisplay.begin();
-  rawDisplay.control(MD_MAX72XX::INTENSITY, MAX_INTENSITY/2);
-  rawDisplay.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-  rawDisplay.clear();
+const char* ssid = "Git Status Tracker";
+const char* password = "123456789";
 
+WebServer server(80);
 
-  display.begin();
-  display.setIntensity(0);
-  display.displayText("GIT", PA_CENTER, display.getSpeed(), 1000, PA_SPRITE, PA_SPRITE);
-  display.setSpriteData(rocket, W_ROCKET, F_ROCKET, rocket, W_ROCKET, F_ROCKET);
+void handleHome() {
+  String homePage = "<!DOCTYPE html><html>\n";
+  homePage +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  homePage +="<title>Git Status Tracker</title>\n";
+  homePage +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  homePage +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+  homePage +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+  homePage +="</style>\n";
+  homePage +="</head>\n";
+  homePage +="<body>\n";
+  homePage +="<h1>Git Status Tracker</h1>\n";
+  homePage +="<h3>Configure the Device</h3>\n";
+  homePage +="<form>\n";
+  homePage +="<input placeholder=\"SSID\" /> \n";
+  homePage +="<input placeholder=\"Password\" /> \n";
+  homePage +="<input type=\"submit\" value=\"Submit\" /> \n";
+  homePage +="</form>\n";
+  homePage +="</body>\n";
+  homePage +="</html>\n";
+
+  server.send(200, "text/html", homePage);
 }
 
-void loop(void)
+void accessPoint() {
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(ssid, password);
+  delay(100);
+  IPAddress IP(192, 168, 0, 1);
+  IPAddress NMask(255, 255, 255, 0);
+  WiFi.softAPConfig(IP, IP, NMask);
+}
+
+void setup(void)
 {
-  // if (display.displayAnimate())
-  //   display.displayReset();
-static boolean bInit = true;  // initialise the animation
+  accessPoint();
+  server.on("/", handleHome);
+  server.begin();
+  rawDisplay.begin();
+  rawDisplay.control(MD_MAX72XX::INTENSITY, MAX_INTENSITY/15);
+  rawDisplay.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
+  rawDisplay.clear();
+}
+
+void loading() {
+  static boolean bInit = true;  // initialise the animation
 
   // Is it time to animate?
   if (millis()-prevTimeAnim < ANIMATION_DELAY)
     return;
+
   prevTimeAnim = millis();      // starting point for next time
 
   rawDisplay.control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
@@ -69,7 +94,7 @@ static boolean bInit = true;  // initialise the animation
   if (bInit)
   {
     rawDisplay.clear();
-    idx = -DATA_WIDTH;
+    idx = 0;
     frame = 0;
     deltaFrame = 1;
     bInit = false;
@@ -102,6 +127,11 @@ static boolean bInit = true;  // initialise the animation
 
   rawDisplay.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 
-  return;
+}
+
+void loop(void)
+{
+  server.handleClient();
+  loading();
 }
 
