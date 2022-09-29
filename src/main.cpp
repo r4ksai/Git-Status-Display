@@ -93,6 +93,7 @@ void accessPoint() {
 }
 
 void connectToWifi(char* ssid, char* password) {
+  // TODO: Add NO WIFI Animation to the display
     int statusChecks = 0;
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
