@@ -9,6 +9,7 @@
 // Loading Animation
 #define ANIMATION_DELAY 75	// milliseconds
 #define MAX_FRAMES      4   // number of animation frames
+#define BLINK_DELAY     200
 
 const uint8_t pacman[MAX_FRAMES][18] =  // ghost pursued by a pacman
 {
@@ -19,10 +20,11 @@ const uint8_t pacman[MAX_FRAMES][18] =  // ghost pursued by a pacman
 };
 const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
 
-uint32_t prevTimeAnim = 0;  // remember the millis() value in animations
-int16_t idx;                // display index (column)
-uint8_t frame;              // current animation frame
-uint8_t deltaFrame;         // the animation frame offset for the next frame
+    uint32_t prevTimeAnim = 0;  // remember the millis() value in animations
+    int16_t idx;                // display index (column)
+    uint8_t frame;              // current animation frame
+    uint8_t deltaFrame;         // the animation frame offset for the next frame
+    boolean blink;
 
     RawDisplay::RawDisplay() : MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES) {
     };
@@ -32,6 +34,26 @@ uint8_t deltaFrame;         // the animation frame offset for the next frame
         MD_MAX72XX::control(MD_MAX72XX::INTENSITY, MAX_INTENSITY/15);
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
         MD_MAX72XX::clear();
+
+        blink = false;
+    }
+
+    void RawDisplay::gitStatus(int x, int y, byte status[]) {
+
+        if (millis()-prevTimeAnim < BLINK_DELAY)
+            return;
+
+        prevTimeAnim = millis();      // starting point for next time
+
+        MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
+
+        for (uint8_t i=0; i<32; i++)
+            MD_MAX72XX::setColumn(i, status[i]);
+
+        MD_MAX72XX::setPoint(x, y, blink);
+        blink = !blink;
+
+        MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
     }
 
     void RawDisplay::loading() {
