@@ -40,6 +40,7 @@ void saveCreds(String ssid, String password) {
     EEPROM.writeString(200, buff2);
     EEPROM.commit();
   EEPROM.end();
+
 }
 
 void handleNotFound(){
@@ -55,7 +56,8 @@ void handleHome() {
           html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}
           body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}
           form{display: flex; flex-direction: column;}
-          input{display: block; padding: 20px 10px;}
+          input{display: block; padding: 10px 20px; margin-bottom: 5px; border-radius: 5px;}
+          input.button{background: #669; color: white;}
         </style>
       </head>
       <body>
@@ -64,7 +66,7 @@ void handleHome() {
         <form>
           <input placeholder="SSID" name="ssid" maxlength="30" />
           <input placeholder="Password" name="password" maxlength="30" />
-          <input type="submit" value="Save" />
+          <input type="submit" value="Save" class="button" />
         </form>
       </body>
   </html>
@@ -94,12 +96,8 @@ void connectToWifi(char* ssid, char* password) {
     int statusChecks = 0;
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
-        if (statusChecks > 2) {
-        accessPoint();
-        return;
-        }
-        delay(500);
-        statusChecks ++;
+      statusChecks++;
+      delay(500);
     }
 }
 
@@ -119,11 +117,6 @@ void readCreds() {
     accessPoint();
   else 
     connectToWifi(ssidBuffer, passwordBuffer);
-
-  Serial.print("SSID : ");
-  Serial.println(ssid);
-  Serial.print("Password : ");
-  Serial.println(password);
 }
 
 void setup(void)
@@ -132,7 +125,6 @@ void setup(void)
   // Set RESET PIN
   pinMode(RESET_PIN, INPUT_PULLUP);
 
-  Serial.begin(9600);
   readCreds();
 
   server.on("/", handleHome);
@@ -153,19 +145,19 @@ void loop(void)
 {
   currentState = digitalRead(RESET_PIN);
 
-  if (lastState == HIGH && currentState == LOW)
-    pressedTime = millis();
-  else if (lastState == LOW && currentState == HIGH) {
-    realeasedTime = millis();
+  // if (lastState == HIGH && currentState == LOW)
+  //   pressedTime = millis();
+  // else if (lastState == LOW && currentState == HIGH) {
+  //   realeasedTime = millis();
 
-    long pressDuration = realeasedTime - pressedTime;
+  //   long pressDuration = realeasedTime - pressedTime;
 
-    if (pressDuration < SHORT_PRESS_TIME)
-      reset();
+  //   if (pressDuration > SHORT_PRESS_TIME)
+  //     reset();
 
-    lastState = currentState;
+  //   lastState = currentState;
 
-  }
+  // }
   server.handleClient();
   // rawDisplay.loading();
   rawDisplay.gitStatus(7, 0, status);
