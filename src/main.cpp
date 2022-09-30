@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <WiFiClientSecure.h>
 #include <EEPROM.h>
 #include "Display/display.h"
 
@@ -17,6 +18,8 @@ const char* ap_password = "123456789";
 
 WebServer server(80);
 RawDisplay rawDisplay = RawDisplay();
+
+WiFiClientSecure client;
 
 void reset() {
   EEPROM.begin(512);
