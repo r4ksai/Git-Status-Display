@@ -25,6 +25,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
     uint8_t frame;              // current animation frame
     uint8_t deltaFrame;         // the animation frame offset for the next frame
     boolean blink;
+    boolean isLoading;
 
     RawDisplay::RawDisplay() : MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES) {
     };
@@ -50,18 +51,22 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
         for (uint8_t i=0; i<32; i++)
             MD_MAX72XX::setColumn(i, status[i]);
 
-        MD_MAX72XX::setPoint(x, y, blink);
-        blink = !blink;
+        if (!(status[0] & 1))
+        {
+            MD_MAX72XX::setPoint(x, y, blink);
+            blink = !blink;
+        }
 
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
     }
 
-    void RawDisplay::loading() {
+    bool RawDisplay::loading() {
         static boolean bInit = true;  // initialise the animation
+        isLoading = false;
 
         // Is it time to animate?
         if (millis()-prevTimeAnim < ANIMATION_DELAY)
-            return;
+            return isLoading;
 
         prevTimeAnim = millis();      // starting point for next time
 
@@ -75,6 +80,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
             frame = 0;
             deltaFrame = 1;
             bInit = false;
+            isLoading = true;
 
             // Lay out the dots
             for (uint8_t i=0; i<MAX_DEVICES; i++)
@@ -104,5 +110,6 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
 
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 
+        return isLoading;
 
     }
