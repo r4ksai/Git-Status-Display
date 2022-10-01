@@ -4,6 +4,8 @@
 #include <WiFiClientSecure.h>
 #include <Memory/memory.h>
 #include <Wifi Manager/wifi-manager.h>
+#include "globals.h"
+#include <Wifi Manager/git-api.h>
 
 const char* ap_ssid = "Git Status Tracker";
 const char* ap_password = "123456789";
@@ -49,6 +51,8 @@ void handleToken() {
     String username = server.arg("username");
     String token = server.arg("token");
     saveToken(username, token);
+    // Wait before restarting !
+    delay(1000);
     ESP.restart();
   }
   else {
@@ -86,7 +90,8 @@ void handleHome() {
     String ssid = server.arg("ssid");
     String password = server.arg("password");
     saveCreds(ssid, password);
-    delay(50);
+    // Wait before restarting !
+    delay(1000);
     ESP.restart();
   }
   else {
@@ -118,11 +123,39 @@ void connectToWifi(char* ssid, char* password) {
         if (statusChecks == 20)
         {
             accessPoint();
-            break;
+            return;
         }
       statusChecks++;
       delay(500);
     }
+
+#ifdef DEBUG
+    Serial.println("Connected to WIFI");
+    Serial.print("Wifi Name : ");
+    Serial.println(ssid);
+#endif
+
+    // Get Git status
+    UserCreds userData = readToken();
+
+    char usernameBuffer[30];
+    char tokenBuffer[50];
+
+    userData.username.toCharArray(usernameBuffer, 30);
+    userData.token.toCharArray(tokenBuffer, 50);
+
+    if (userData.username.length() <= 0 && userData.token.length() <= 0) 
+    return;
+
+#ifdef DEBUG
+    Serial.println("Token Exists");
+    Serial.print("Username : ");
+    Serial.println(usernameBuffer);
+    Serial.print("Token : ");
+    Serial.println(tokenBuffer);
+#endif
+    fetchData(usernameBuffer, tokenBuffer);
+
 }
 
 
