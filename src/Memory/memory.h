@@ -6,7 +6,13 @@ struct WifiCreds {
     String password;
 };
 
+struct UserCreds {
+    String username;
+    String token;
+};
+
 void reset();
 void saveToken(String username, String token);
 void saveCreds(String ssid, String password);
 WifiCreds readCreds();
+UserCreds readToken();
