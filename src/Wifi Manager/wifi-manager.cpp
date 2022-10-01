@@ -49,6 +49,7 @@ void handleUsername() {
   if (server.hasArg("username")) {
     String username = server.arg("username");
     saveUsername(username);
+    server.send(200, "text/html", usernamePage);
     // Wait before restarting !
     delay(1000);
     ESP.restart();
@@ -88,6 +89,7 @@ void handleToken() {
     String username = server.arg("username");
     String token = server.arg("token");
     saveToken(username, token);
+    server.send(200, "text/html", tokenPage);
     // Wait before restarting !
     delay(1000);
     ESP.restart();
@@ -127,6 +129,7 @@ void handleHome() {
     String ssid = server.arg("ssid");
     String password = server.arg("password");
     saveCreds(ssid, password);
+    server.send(200, "text/html", homePage);
     // Wait before restarting !
     delay(1000);
     ESP.restart();
