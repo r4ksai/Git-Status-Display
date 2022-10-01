@@ -1,6 +1,6 @@
 # Git Status Display
 
-![Background](Images/background.png)
+![Background](Images/background.jpg)
 
 This is a display for showing GitHub Collaborations.
 
@@ -16,7 +16,7 @@ Once you have entered the credentials the device will restart and connect to the
 Now find the IP of the device using your prefered IP scanner and access the IP on the website with an address of `/token`
 Here you can add your token and display username
 
-![Git Status Display](Images/angled.png)
+![Git Status Display](Images/angled.jpg)
 
 ## Getting a token
 
@@ -34,7 +34,7 @@ To change the username you can go to `/username` and update the username
 To reset the device you can go to `/reset` and this automatically removes the wifi credentials.
 For removing the token you'll have to manually go and change the token to blank space
 
-![Git Status Display Loading](Images/zoomed.png)
+![Git Status Display Loading](Images/zoomed.jpg)
 ## Wiring
 
 |ESP32 |DOT MATRIX|
