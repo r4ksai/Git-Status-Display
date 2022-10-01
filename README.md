@@ -59,3 +59,6 @@ There are files in enclosure folder that you can modify and slice with your pref
 - Show loading animation on start 
 - Use freertos to make display animation async
 - Add Product image to readme
+- Show some animation every 10mins to use as a pomodoro timer
+- Frequertly update the data
+- Flip all the alternative columns to make it looks right
