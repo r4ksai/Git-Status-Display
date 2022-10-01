@@ -15,6 +15,22 @@ void reset() {
   ESP.restart();
 }
 
+void saveUsername(String username) {
+  char buff1[30];
+  username.toCharArray(buff1, 30);
+
+  EEPROM.begin(512);
+    EEPROM.writeString(250, buff1);
+    boolean commitStatus = EEPROM.commit();
+    #ifdef DEBUG
+    if (commitStatus)
+        Serial.println("Saved");
+    else 
+        Serial.println("Error Saving");
+    #endif
+    EEPROM.end();
+}
+
 void saveToken(String username, String token) {
   char buff1[30];
   char buff2[50];

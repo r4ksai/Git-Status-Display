@@ -22,6 +22,43 @@ void handleReset() {
   server.send(200, "text/plain", "Device Reset !");
 }
 
+void handleUsername() {
+  String usernamePage = R"rawliteral(
+  <!DOCTYPE HTML><html>
+      <head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no ">
+        <title>Git Status Tracker</title>
+        <style>
+          html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}
+          body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}
+          form{display: flex; flex-direction: column;}
+          input{display: block; padding: 10px 20px; margin-bottom: 5px; border-radius: 5px;}
+          input.button{background: #669; color: white;}
+        </style>
+      </head>
+      <body>
+        <h1>Git Status Tracker</h1>
+        <h3>Change Username</h3>
+        <form>
+          <input placeholder="Username" name="username" maxlength="30" />
+          <input type="submit" value="Save" class="button" />
+        </form>
+      </body>
+  </html>
+  )rawliteral";
+
+  if (server.hasArg("username")) {
+    String username = server.arg("username");
+    saveUsername(username);
+    // Wait before restarting !
+    delay(1000);
+    ESP.restart();
+  }
+  else {
+    server.send(200, "text/html", usernamePage);
+  }
+
+}
+
 void handleToken() {
   String tokenPage = R"rawliteral(
   <!DOCTYPE HTML><html>
@@ -102,6 +139,7 @@ void handleHome() {
 void initializeWifi() {
   server.on("/", handleHome);
   server.on("/token", handleToken);
+  server.on("/username", handleUsername);
   server.on("/reset", handleReset);
   server.onNotFound(handleNotFound);
   server.begin();

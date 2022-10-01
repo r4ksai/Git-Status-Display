@@ -17,3 +17,16 @@ To install the firmware, use platformio and upload the sketch directly to the ES
 |GND   |GND       |
 
 ![Wiring Diagram](wiring_diagram.jpeg)
+
+## Enclosure
+
+There is a file called enclosure.stl that you can slice with your prefered slicer and print.
+
+## TODO
+
+1. Add a default username
+2. Seperate username from token
+3. Auto dim according to the time
+4. Show loading animation on start 
+5. Use freertos to make display animation async
+6. Fix Auto reloading the form pages

@@ -80,7 +80,6 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
             frame = 0;
             deltaFrame = 1;
             bInit = false;
-            isLoading = true;
 
             // Lay out the dots
             for (uint8_t i=0; i<MAX_DEVICES; i++)
@@ -107,6 +106,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
 
         // check if we are completed and set initialise for next time around
         bInit = (idx == MD_MAX72XX::getColumnCount()+DATA_WIDTH);
+        isLoading = bInit;
 
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 

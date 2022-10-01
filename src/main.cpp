@@ -5,7 +5,7 @@
 #include "Wifi Manager/wifi-manager.h"
 #include "globals.h"
 
-int loadingCounter = 0;
+int loadingCounter = -1;
 RawDisplay rawDisplay = RawDisplay();
 
 void setup(void)
@@ -19,16 +19,12 @@ void setup(void)
   initializeWifi();
 }
 
-void getStatus() {
-
-}
-
 void loop(void)
 {
   handleClient();
   if (loadingCounter < 2) {
     if (infiniteLoading) 
-    loadingCounter = 0;
+    loadingCounter = -1;
 
     loadingCounter += rawDisplay.loading() ? 1 : 0;
   }
