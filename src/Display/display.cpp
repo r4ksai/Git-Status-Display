@@ -27,6 +27,20 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
     boolean blink;
     boolean isLoading;
 
+    byte reverseByte(byte x) {
+
+        return(
+         x << 7        | 
+         (x << 5 & 64) | 
+         (x << 3 & 32) | 
+         (x << 1 & 16) |
+         x >> 7        | 
+         (x >> 5 & 2)  | 
+         (x >> 3 & 4)  | 
+         (x >> 1 & 8)  
+         );
+    }
+
     RawDisplay::RawDisplay() : MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES) {
     };
 
@@ -49,7 +63,13 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::OFF);
 
         for (uint8_t i=0; i<32; i++)
-            MD_MAX72XX::setColumn(i, status[i]);
+        {
+            byte dataColumn = status[i];
+            if (i % 2 == 0)
+                dataColumn = reverseByte(dataColumn);
+
+            MD_MAX72XX::setColumn(i, dataColumn);
+        }
 
         if (!(status[0] & 1))
         {
