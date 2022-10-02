@@ -50,6 +50,9 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
         MD_MAX72XX::clear();
 
+        for (uint8_t i=0; i<32; i++)
+            MD_MAX72XX::setColumn(i, 0b11111111);
+
         blink = false;
     }
 

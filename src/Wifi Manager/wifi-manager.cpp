@@ -9,6 +9,8 @@
 
 const char* ap_ssid = "Git Status Tracker";
 const char* ap_password = "123456789";
+const int india_gmt_offset = 19800;
+const char* ntp_server = "pool.ntp.org";
 
 WebServer server(80);
 WiFiClientSecure client;

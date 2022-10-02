@@ -56,7 +56,6 @@ There are files in enclosure folder that you can modify and slice with your pref
 ## TODO
 
 - Auto dim according to the time
-- Show loading animation on start 
 - Use freertos to make display animation async
-- Show some animation every 10mins to use as a pomodoro timer
 - Frequertly update the data with time
+- Check if millis can lead to error later
