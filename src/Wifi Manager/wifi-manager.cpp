@@ -156,6 +156,32 @@ void accessPoint() {
     WiFi.softAPConfig(IP, IP, NMask);
 }
 
+void updateStatusPoints() {
+    if (WiFi.isConnected())
+    {
+        // Get Git status
+        UserCreds userData = readToken();
+
+        char usernameBuffer[30];
+        char tokenBuffer[50];
+
+        userData.username.toCharArray(usernameBuffer, 30);
+        userData.token.toCharArray(tokenBuffer, 50);
+
+        if (userData.username.length() <= 0 && userData.token.length() <= 0) 
+        return;
+
+        #ifdef DEBUG
+            Serial.println("Token Exists");
+            Serial.print("Username : ");
+            Serial.println(usernameBuffer);
+            Serial.print("Token : ");
+            Serial.println(tokenBuffer);
+        #endif
+        fetchData(usernameBuffer, tokenBuffer);
+    }
+}
+
 void connectToWifi(char* ssid, char* password) {
   // TODO: Add NO WIFI Animation to the display
     int statusChecks = 0;
@@ -176,26 +202,7 @@ void connectToWifi(char* ssid, char* password) {
     Serial.println(ssid);
 #endif
 
-    // Get Git status
-    UserCreds userData = readToken();
-
-    char usernameBuffer[30];
-    char tokenBuffer[50];
-
-    userData.username.toCharArray(usernameBuffer, 30);
-    userData.token.toCharArray(tokenBuffer, 50);
-
-    if (userData.username.length() <= 0 && userData.token.length() <= 0) 
-    return;
-
-#ifdef DEBUG
-    Serial.println("Token Exists");
-    Serial.print("Username : ");
-    Serial.println(usernameBuffer);
-    Serial.print("Token : ");
-    Serial.println(tokenBuffer);
-#endif
-    fetchData(usernameBuffer, tokenBuffer);
+    updateStatusPoints();
 
 }
 
