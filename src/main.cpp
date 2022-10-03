@@ -28,7 +28,12 @@ void setup(void)
 void loop(void)
 {
   handleClient();
-  unsigned long sinceLastBreak = millis() - lastBreak;
+  unsigned long timeNow = millis();
+
+  if (lastBreak > timeNow)
+    lastBreak = 0;
+
+  unsigned long sinceLastBreak = timeNow - lastBreak;
   boolean showLoading = sinceLastBreak > (60000 * breakAfter);
 
   if (loadingCounter < 2 || showLoading) {
