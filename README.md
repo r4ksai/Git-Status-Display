@@ -9,6 +9,9 @@ This is a display for showing GitHub Collaborations.
 To install the firmware, use platformio and upload the sketch directly to the ESP32.
 
 Once installed, The device will act as an access point.
+
+To access the access point user the password **0123456789**
+
 browse to **192.168.0.1** and add in your wifi credentials.
 
 Once you have entered the credentials the device will restart and connect to the wifi.
