@@ -2,5 +2,5 @@
 
 void accessWifi();
 void handleClient();
-void initializeWifi();
+void initializeServer();
 void updateStatusPoints();

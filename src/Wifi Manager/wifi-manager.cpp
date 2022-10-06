@@ -141,7 +141,7 @@ void handleHome() {
   }
 
 }
-void initializeWifi() {
+void initializeServer() {
   server.on("/", handleHome);
   server.on("/token", handleToken);
   server.on("/username", handleUsername);
