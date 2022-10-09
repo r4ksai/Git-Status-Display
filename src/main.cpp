@@ -17,7 +17,7 @@ int loadingCounter = 0;
 void setup(void)
 {
 #ifdef DEBUG
-  Serial.begin(9600);
+  Serial.begin(115200);
 #endif
 
   lastBreak = 0;
