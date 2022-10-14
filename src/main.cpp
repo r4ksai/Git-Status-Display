@@ -13,6 +13,7 @@ unsigned int breakAfter = 10;
 unsigned int breakTime = 1;
 boolean statusChecked = false;
 int loadingCounter = 0;
+int retryCounter = 0;
 
 void setup(void)
 {
@@ -40,6 +41,11 @@ void loop(void)
   // Show loading after an user specified duration
   boolean showLoading = sinceLastBreak > (60000 * breakAfter);
 
+  if (retryCounter > 10) {
+    retryCounter = retryConnection();
+    retryCounter = 0;
+  }
+
   // Display loading animation after a specified duration and complete animation before showing the status display
   if (loadingCounter < 2 || showLoading) {
     // This variable controls animation to play till its over
@@ -59,7 +65,9 @@ void loop(void)
     }
 
     // Add counter when animaiton is over
-    loadingCounter += rawDisplay.loading() ? 1 : 0;
+    animtionOver = rawDisplay.loading() ? 1 : 0
+    loadingCounter += animtionOver;
+    retryCounter += animtionOver;
   }
   else {
     rawDisplay.gitStatus(7, 0, statusBuffer);

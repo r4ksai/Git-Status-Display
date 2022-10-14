@@ -12,6 +12,9 @@ const char* ap_password = "123456789";
 const int india_gmt_offset = 19800;
 const char* ntp_server = "pool.ntp.org";
 
+boolean credsAvailable = false;
+boolean noConnection = true;
+
 WebServer server(80);
 WiFiClientSecure client;
 
@@ -192,11 +195,14 @@ void connectToWifi(char* ssid, char* password) {
         if (statusChecks == 20)
         {
             accessPoint();
+            noConnection = true;
             return;
         }
       statusChecks++;
       delay(500);
     }
+
+    noConnection = false;
 
 #ifdef DEBUG
     Serial.println("Connected to WIFI");
@@ -218,10 +224,20 @@ void accessWifi() {
   creds.ssid.toCharArray(ssidBuffer, 30);
   creds.password.toCharArray(passwordBuffer, 30);
 
-  if (creds.ssid.length() <= 0 && creds.password.length() <= 0) 
-    accessPoint();
-  else 
+  credsAvailable = !(creds.ssid.length() <= 0 && creds.password.length() <= 0)
+
+  if (credsAvailable) 
     connectToWifi(ssidBuffer, passwordBuffer);
+  else 
+    accessPoint();
+}
+
+void retryConnection() {
+  if (credsAvailable) {
+    if (noConnection) {
+      accessWifi();
+    }
+    }
 }
 
 void handleClient() {
