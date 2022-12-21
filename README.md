@@ -55,9 +55,3 @@ For removing the token you'll have to manually go and change the token to blank 
 ![Enclosure](Images/enclosure.png)
 
 There are files in enclosure folder that you can modify and slice with your prefered slicer and print.
-
-## TODO
-
-- Auto dim according to the time
-- Use freertos to make display animation async
-- Frequertly update the data with time
