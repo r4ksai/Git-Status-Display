@@ -2,8 +2,7 @@
 #include "display.h"
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
-#define MAX_DEVICES 4
-
+#define MAX_DEVICES 4 // Screens
 #define CS_PIN    5
 
 // Loading Animation
@@ -11,7 +10,7 @@
 #define MAX_FRAMES      4   // number of animation frames
 #define BLINK_DELAY     200
 
-const uint8_t pacman[MAX_FRAMES][18] =  // ghost pursued by a pacman
+const uint8_t pacman[MAX_FRAMES][18] =  // pacman pursued by a ghost
 {
   { 0xfe, 0x73, 0xfb, 0x7f, 0xf3, 0x7b, 0xfe, 0x00, 0x00, 0x00, 0x3c, 0x7e, 0x7e, 0xff, 0xe7, 0xc3, 0x81, 0x00 },
   { 0xfe, 0x7b, 0xf3, 0x7f, 0xfb, 0x73, 0xfe, 0x00, 0x00, 0x00, 0x3c, 0x7e, 0xff, 0xff, 0xe7, 0xe7, 0x42, 0x00 },
@@ -27,8 +26,8 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
     boolean blink;
     boolean isLoading;
 
+    // Reverse the row order of the byte so that git status dots have a continuous flow
     byte reverseByte(byte x) {
-
         return(
          x << 7        | 
          (x << 5 & 64) | 
@@ -50,14 +49,15 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
         MD_MAX72XX::clear();
 
-        for (uint8_t i=0; i<32; i++)
-            MD_MAX72XX::setColumn(i, 0b11111111);
+        // Turn all led's on
+        for (uint8_t i=0; i<32; i++) MD_MAX72XX::setColumn(i, 0b11111111);
 
         blink = false;
     }
 
     void RawDisplay::gitStatus(int x, int y, byte status[]) {
 
+        // Exit if the next frame time has not reached
         if (millis()-prevTimeAnim < BLINK_DELAY)
             return;
 
@@ -74,6 +74,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
             MD_MAX72XX::setColumn(i, dataColumn);
         }
 
+        // Check if the latest git dot is ON/OFF and blink the last dot in the display
         if (!(status[0] & 1))
         {
             MD_MAX72XX::setPoint(x, y, blink);
@@ -83,6 +84,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
     }
 
+    // Show pacman animation
     bool RawDisplay::loading() {
         static boolean bInit = true;  // initialise the animation
         isLoading = false;

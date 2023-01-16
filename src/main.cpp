@@ -9,8 +9,8 @@ RawDisplay rawDisplay = RawDisplay();
 
 // Variables for interval checking and animation
 unsigned long lastBreak;
-unsigned int breakAfter = 10;
-unsigned int breakTime = 1;
+unsigned int breakAfter = 10; // 10 Minutes interval
+unsigned int breakTime = 1; // 1 Minute break
 boolean statusChecked = false;
 int loadingCounter = 0;
 int retryCounter = 0;

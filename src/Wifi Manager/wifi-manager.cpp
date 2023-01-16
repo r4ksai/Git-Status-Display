@@ -9,7 +9,7 @@
 
 const char* ap_ssid = "Git Status Tracker";
 const char* ap_password = "123456789";
-const int india_gmt_offset = 19800;
+const int gmt_offset = 19800;
 const char* ntp_server = "pool.ntp.org";
 
 boolean credsAvailable = false;
