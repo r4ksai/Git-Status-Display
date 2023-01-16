@@ -55,3 +55,25 @@ For removing the token you'll have to manually go and change the token to blank 
 ![Enclosure](Images/enclosure.png)
 
 There are files in enclosure folder that you can modify and slice with your prefered slicer and print.
+
+## Flow Chart
+```mermaid
+flowchart TD
+
+Start --> B[Clear Display]
+B --> C[Splash Screen]
+C --> D[Loading Screen]
+D --> F[Check EEPROM for WiFi Creds]
+F --> G{WiFi Creds Found}
+G --> |No| H[Start Access Point]
+G --> |Yes| I[Connect to WiFi]
+I --> J{Connected to WiFi}
+J --> |No| H
+J --> |Yes| K[Get Git Status Dots]
+K --> L[Setup Webserver]
+H --> L[Setup Webserver]
+K --> E[Status Dots Screen]
+E --> |Wait 10 Mins| D
+E --> End
+L --> End
+```
