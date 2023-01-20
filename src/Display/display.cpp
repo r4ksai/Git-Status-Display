@@ -3,7 +3,9 @@
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4 // Screens
-#define CS_PIN    5
+#define CLK_PIN  D5 
+#define DATA_PIN D7 
+#define CS_PIN   D8 
 
 // Loading Animation
 #define ANIMATION_DELAY 75	// milliseconds
@@ -40,7 +42,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
          );
     }
 
-    RawDisplay::RawDisplay() : MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES) {
+    RawDisplay::RawDisplay() : MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES) {
     };
 
     void RawDisplay::begin() {
