@@ -4,43 +4,28 @@
 #include <Arduino_JSON.h>
 #include "globals.h"
 #include "git-api.h"
+#include <EEPROM.h>
 
 const char* host = "https://api.github.com/graphql";
 const int port = 443;
-const char* rootCACertificate = R"rawliteral(
------BEGIN CERTIFICATE-----
-MIIEFzCCAv+gAwIBAgIQB/LzXIeod6967+lHmTUlvTANBgkqhkiG9w0BAQwFADBh
-MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
-d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBD
-QTAeFw0yMTA0MTQwMDAwMDBaFw0zMTA0MTMyMzU5NTlaMFYxCzAJBgNVBAYTAlVT
-MRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxMDAuBgNVBAMTJ0RpZ2lDZXJ0IFRMUyBI
-eWJyaWQgRUNDIFNIQTM4NCAyMDIwIENBMTB2MBAGByqGSM49AgEGBSuBBAAiA2IA
-BMEbxppbmNmkKaDp1AS12+umsmxVwP/tmMZJLwYnUcu/cMEFesOxnYeJuq20ExfJ
-qLSDyLiQ0cx0NTY8g3KwtdD3ImnI8YDEe0CPz2iHJlw5ifFNkU3aiYvkA8ND5b8v
-c6OCAYIwggF+MBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFAq8CCkXjKU5
-bXoOzjPHLrPt+8N6MB8GA1UdIwQYMBaAFAPeUDVW0Uy7ZvCj4hsbw5eyPdFVMA4G
-A1UdDwEB/wQEAwIBhjAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwdgYI
-KwYBBQUHAQEEajBoMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5j
-b20wQAYIKwYBBQUHMAKGNGh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdp
-Q2VydEdsb2JhbFJvb3RDQS5jcnQwQgYDVR0fBDswOTA3oDWgM4YxaHR0cDovL2Ny
-bDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0R2xvYmFsUm9vdENBLmNybDA9BgNVHSAE
-NjA0MAsGCWCGSAGG/WwCATAHBgVngQwBATAIBgZngQwBAgEwCAYGZ4EMAQICMAgG
-BmeBDAECAzANBgkqhkiG9w0BAQwFAAOCAQEAR1mBf9QbH7Bx9phdGLqYR5iwfnYr
-6v8ai6wms0KNMeZK6BnQ79oU59cUkqGS8qcuLa/7Hfb7U7CKP/zYFgrpsC62pQsY
-kDUmotr2qLcy/JUjS8ZFucTP5Hzu5sn4kL1y45nDHQsFfGqXbbKrAjbYwrwsAZI/
-BKOLdRHHuSm8EdCGupK8JvllyDfNJvaGEwwEqonleLHBTnm8dqMLUeTF0J5q/hos
-Vq4GNiejcxwIfZMy0MJEGdqN9A57HSgDKwmKdsp33Id6rHtSJlWncg+d0ohP/rEh
-xRqhqjn1VtvChMQ1H3Dau0bwhr9kAMQ+959GG50jBbl9s08PqUU643QwmA==
------END CERTIFICATE-----
-)rawliteral";
+const char* fingerprint = "29 70 30 74 CA 3C 48 F5 4A 79 C6 2D 11 57 A2 41 2A 2D 7D 5C";
 
 static WiFiClientSecure client;
 HTTPClient http;
 
-void fetchData(char* username, char* token){
-    // client.setCACert(rootCACertificate);
-    http.begin(client, host);
+void fetchData(){
+    client.setFingerprint(fingerprint);
+    char username[100];
+    char token[100];
 
+    EEPROM.begin(200);
+    for(int i = 0; i < 100; i++)
+    {
+      username[i] = EEPROM.read(i);
+      token[i] = EEPROM.read(i + 100);
+    }
+
+    http.begin(client, host);
     http.addHeader("Content-Type", "application/graphql");
     http.addHeader("Authorization", "bearer " + String(token));
 
@@ -48,10 +33,13 @@ void fetchData(char* username, char* token){
     int status = http.POST(payload);
 
     if (status != 200)
-    return;
+    {
+      return;
+    }
 
     boolean contributions[256] = {};
 
+    // TODO: Data too large returning blank
     JSONVar response = JSON.parse(http.getString());
     JSONVar weekData = response["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
     int counter = 0;
@@ -84,32 +72,113 @@ void fetchData(char* username, char* token){
 
 ESP8266WebServer webServer(80);
 
-void handle_onConnect() {
-  String ptr = "<!DOCTYPE html> <html>\n";
-  ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-  ptr +="<title>LED Control</title>\n";
-  ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
-  ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
-  ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
-  ptr +=".button-on {background-color: #1abc9c;}\n";
-  ptr +=".button-on:active {background-color: #16a085;}\n";
-  ptr +=".button-off {background-color: #34495e;}\n";
-  ptr +=".button-off:active {background-color: #2c3e50;}\n";
-  ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
-  ptr +="</style>\n";
-  ptr +="</head>\n";
-  ptr +="<body>\n";
-  ptr +="<h1>ESP8266 Web Server</h1>\n";
-  ptr +="<h3>Using Access Point(AP) Mode</h3>\n";
-  ptr +="</body>\n";
-  ptr +="</html>\n";
+  String HTMLHead = R"rawliteral(
+  <!DOCTYPE HTML><html>
+      <head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no ">
+        <title>Git Display</title>
+        <style>
+          html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}
+          body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}
+          form{display: flex; flex-direction: column;}
+          input{display: block; padding: 10px 20px; margin-bottom: 5px; border-radius: 5px;}
+          input.button{background: #669; color: white;}
+        </style>
+      </head>
+      <body>
+        <h1>Git Display</h1>
+        )rawliteral";
 
-  webServer.send(200, "text/html", ptr);
+void handle_onChangeToken() {
+
+  String tokenBody = R"rawliteral(
+        <h3>Set Git Token</h3>
+        <form>
+          <input placeholder="Token" name="token" maxlength="50" />
+          <input type="submit" value="Save" class="button" />
+        </form>
+      </body>
+  </html>
+  )rawliteral";
+
+
+  if (webServer.hasArg("token")) {
+    String token = webServer.arg("token");
+
+    EEPROM.begin(100);
+    // Clear Memory
+    for(int i = 0; i < 100; i++)
+    {
+      EEPROM.write(i, 0);
+    }
+
+    // Write
+    for(unsigned int i = 0; i < token.length(); i++)
+    {
+      EEPROM.write(i, token[i]);
+    }
+
+    EEPROM.commit();
+
+    webServer.send(200, "text/html", HTMLHead+tokenBody);
+    // Wait before restarting !
+    delay(1000);
+    ESP.restart();
+  }
+  else {
+    webServer.send(200, "text/html", HTMLHead+tokenBody);
+  }
+}
+
+void handle_onConnect() {
+  String HTMLBody = R"rawliteral(
+        <h3>Configure the Device</h3>
+        <form>
+          <input placeholder="Username" name="username" maxlength="30" />
+          <input placeholder="Token" name="token" maxlength="50" />
+          <input type="submit" value="Save" class="button" />
+        </form>
+      </body>
+  </html>
+  )rawliteral";
+
+  if (webServer.hasArg("username") && webServer.hasArg("token")) {
+    String username = webServer.arg("username");
+    String token = webServer.arg("token");
+
+    EEPROM.begin(200);
+
+    // Clear Memory
+    for(int i = 0; i < 200; i++)
+    {
+      EEPROM.write(i, 0);
+    }
+
+    for(unsigned int i = 0; i < username.length(); i++)
+    {
+      EEPROM.write(i, username[i]);
+    }
+
+    for(unsigned int i = 0; i < token.length(); i++)
+    {
+      EEPROM.write(i+100, token[i]);
+    }
+
+    EEPROM.commit();
+
+    webServer.send(200, "text/html", HTMLHead+HTMLBody);
+    // Wait before restarting !
+    delay(1000);
+    ESP.restart();
+  }
+  else {
+    webServer.send(200, "text/html", HTMLHead+HTMLBody);
+  }
 }
 
 void runServer(){
   webServer.begin();
   webServer.on("/", handle_onConnect);
+  webServer.on("/token", handle_onChangeToken);
 }
 
 void handleConnections(){

@@ -5,6 +5,6 @@ struct UserCreds {
     String token;
 };
 
-void fetchData(char* username, char* token);
+void fetchData();
 void runServer();
 void handleConnections();
