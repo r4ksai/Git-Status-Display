@@ -6,7 +6,7 @@ This is a display for showing GitHub Collaborations.
 
 ## Setup Device
 
-To install the firmware, use platformio and upload the sketch directly to the ESP32.
+To install the firmware, use platformio and upload the sketch directly to the ESP8266.
 
 Once installed, The device will act as an access point.
 
@@ -38,17 +38,10 @@ To reset the device you can go to `/reset` and this automatically removes the wi
 For removing the token you'll have to manually go and change the token to blank space
 
 ![Git Status Display Loading](Images/zoomed.jpg)
+
 ## Wiring
 
-|ESP32 |DOT MATRIX|
-|------|----------|
-|5V    |VCC       |
-|PIN 18|CLK       |
-|PIN 23|DATA      |
-|PIN 5 |CS        |
-|GND   |GND       |
-
-![Wiring Diagram](Images/wiring_diagram.jpeg)
+![Wiring Diagram](Images/wiring_diagram.png)
 
 ## Enclosure
 
