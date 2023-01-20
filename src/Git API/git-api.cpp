@@ -39,9 +39,38 @@ void fetchData(){
 
     boolean contributions[256] = {};
 
+    int len = http.getSize();
+
+    static char buff[11000] = {0};
+
+    while (http.connected() && (len > 0 || len == -1)){
+
+      size_t size = client.available();
+
+      static char *buffer = buff;
+
+      if (size) {
+        int c = client.readBytes(buffer, ((size > sizeof(buff)) ? sizeof(buff) : size));
+        if (len > 0) {
+          len -= c;
+          buffer = buffer + c;
+        }
+      }
+      delay(1);
+    }
+
+    String responseString(buff);
+
+    Serial.println("BUFFER :");
+    Serial.println(responseString.length());
+    Serial.println(responseString);
     // TODO: Data too large returning blank
-    JSONVar response = JSON.parse(http.getString());
+    JSONVar response = JSON.parse(responseString);
+    Serial.println("ALL LENGTH:");
+    Serial.println(response.length());
     JSONVar weekData = response["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
+    Serial.println("LENGTH :");
+    Serial.println(weekData.length());
     int counter = 0;
     for (int i = weekData.length() - 1; i >= 0; i--){
       for (int j = weekData[i]["contributionDays"].length() - 1; j >= 0; j--) {
