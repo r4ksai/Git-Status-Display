@@ -2,7 +2,8 @@
     "files.associations": {
         "*.html": "html",
         "random": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "memory": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

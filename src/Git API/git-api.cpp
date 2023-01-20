@@ -1,8 +1,9 @@
-#include <WiFi.h>
-#include <HTTPClient.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
 #include <WiFiClientSecure.h>
 #include <Arduino_JSON.h>
 #include "globals.h"
+#include "git-api.h"
 
 const char* host = "https://api.github.com/graphql";
 const int port = 443;
@@ -37,7 +38,7 @@ static WiFiClientSecure client;
 HTTPClient http;
 
 void fetchData(char* username, char* token){
-    client.setCACert(rootCACertificate);
+    // client.setCACert(rootCACertificate);
     http.begin(client, host);
 
     http.addHeader("Content-Type", "application/graphql");
@@ -79,4 +80,38 @@ void fetchData(char* username, char* token){
 
     infiniteLoading = false;
 
+}
+
+ESP8266WebServer webServer(80);
+
+void handle_onConnect() {
+  String ptr = "<!DOCTYPE html> <html>\n";
+  ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
+  ptr +="<title>LED Control</title>\n";
+  ptr +="<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
+  ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
+  ptr +=".button {display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;}\n";
+  ptr +=".button-on {background-color: #1abc9c;}\n";
+  ptr +=".button-on:active {background-color: #16a085;}\n";
+  ptr +=".button-off {background-color: #34495e;}\n";
+  ptr +=".button-off:active {background-color: #2c3e50;}\n";
+  ptr +="p {font-size: 14px;color: #888;margin-bottom: 10px;}\n";
+  ptr +="</style>\n";
+  ptr +="</head>\n";
+  ptr +="<body>\n";
+  ptr +="<h1>ESP8266 Web Server</h1>\n";
+  ptr +="<h3>Using Access Point(AP) Mode</h3>\n";
+  ptr +="</body>\n";
+  ptr +="</html>\n";
+
+  webServer.send(200, "text/html", ptr);
+}
+
+void runServer(){
+  webServer.begin();
+  webServer.on("/", handle_onConnect);
+}
+
+void handleConnections(){
+  webServer.handleClient();
 }
