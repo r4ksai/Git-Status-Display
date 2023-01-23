@@ -1,5 +1,5 @@
 #include "MD_MAX72xx.h"
-#include "display.h"
+#include "Display.h"
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4 // Screens

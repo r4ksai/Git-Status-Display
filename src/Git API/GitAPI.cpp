@@ -2,8 +2,8 @@
 #include <ESP8266WebServer.h>
 #include <WiFiClientSecure.h>
 #include <Arduino_JSON.h>
-#include "globals.h"
-#include "git-api.h"
+#include "Globals.h"
+#include "GitAPI.h"
 #include <EEPROM.h>
 
 const char* host = "https://api.github.com/graphql";
