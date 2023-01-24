@@ -15,7 +15,9 @@ WiFiMode WiFiManager::connect()
         while (l != 0)
         {
             Serial.print("WM: - ");
-            Serial.println(WiFi.SSID(l--));
+            Serial.print(WiFi.SSID(l));
+            Serial.print(" : ");
+            Serial.println(WiFi.RSSI(l--));
         }
     #endif
 
@@ -168,8 +170,8 @@ void WiFiManager::accessPoint()
 
 void WiFiManager::handleHome()
 {
-    DEBUG_PRINT("WM: 200 - home - ");
-    DEBUG_PRINTLN(server.method());
+    DEBUG_PRINT("WM: 200 - Home - ");
+    DEBUG_PRINTLN(server.method() == 1 ? "GET" : "POST");
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
@@ -182,8 +184,8 @@ void WiFiManager::handleHome()
 
 void WiFiManager::handleWiFiCreds()
 {
-    DEBUG_PRINT("WM: 200 - wifi creds - ");
-    DEBUG_PRINTLN(server.method());
+    DEBUG_PRINT("WM: 200 - WiFi Creds - ");
+    DEBUG_PRINTLN(server.method() == 1 ? "GET" : "POST");
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
@@ -216,8 +218,8 @@ void WiFiManager::handleWiFiCreds()
 
 void WiFiManager::handleGitToken()
 {
-    DEBUG_PRINT("WM: 200 - token - ");
-    DEBUG_PRINTLN(server.method());
+    DEBUG_PRINT("WM: 200 - Token - ");
+    DEBUG_PRINTLN(server.method() == 1 ? "GET" : "POST");
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
@@ -249,8 +251,8 @@ void WiFiManager::handleGitToken()
 
 void WiFiManager::handleGitUsername()
 {
-    DEBUG_PRINT("WM: 200 - username - ");
-    DEBUG_PRINTLN(server.method());
+    DEBUG_PRINT("WM: 200 - Username - ");
+    DEBUG_PRINTLN(server.method() == 1 ? "GET" : "POST");
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
