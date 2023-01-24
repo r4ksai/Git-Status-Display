@@ -7,16 +7,21 @@ ESP8266WebServer server(80);
 
 WiFiMode WiFiManager::connect()
 {
-    // int x = WiFi.scanNetworks();
-    // delay(2000);
-    // while (x != 0)
-    // {
-    //     Serial.println(WiFi.SSID(x--));
-    // }
+
+    #ifdef DEBUG
+        DEBUG_PRINTLN("WM: Available Networks");
+        DEBUG_PRINTLN("WM: ------------------");
+        int l = WiFi.scanNetworks();
+        while (l != 0)
+        {
+            Serial.print("WM: - ");
+            Serial.println(WiFi.SSID(l--));
+        }
+    #endif
 
     if (String(ssid).length() == 0)
     {
-        // No Creds Available
+        DEBUG_PRINTLN("WM: No Credentials Available");
         accessPoint();
         return WIFI_AP;
     }
@@ -24,12 +29,18 @@ WiFiMode WiFiManager::connect()
     {
         // Try Connecting
         WiFi.mode(WIFI_STA);
+        DEBUG_PRINT("WM: Connecting to ");
+        DEBUG_PRINT(ssid);
         WiFi.begin(ssid, password);
         uint8 retries = 0;
         while (WiFi.status() != WL_CONNECTED)
         {
+            DEBUG_PRINT(".");
+            WiFi.begin(ssid, password);
             if (retries > MAX_RETRIES)
             {
+                DEBUG_PRINTLN();
+                DEBUG_PRINTLN("WM: Failed to connect to WiFi");
                 accessPoint();
                 return WIFI_AP;
             }
@@ -42,6 +53,7 @@ WiFiMode WiFiManager::connect()
 
 void WiFiManager::wipeEEPROM()
 {
+    DEBUG_PRINTLN("WM: Wiping EEPROM");
     EEPROM.begin(200);
     for (int i = 0; i < 200; i++)
     {
@@ -51,7 +63,7 @@ void WiFiManager::wipeEEPROM()
     EEPROM.end();
 }
 
-bool setToken(String _token)
+bool WiFiManager::setToken(String _token)
 {
     if (_token.length() < 50)
     {
@@ -70,7 +82,7 @@ bool setToken(String _token)
     return false;
 }
 
-bool setUsername(String _username)
+bool WiFiManager::setUsername(String _username)
 {
     if (_username.length() < 50)
     {
@@ -89,7 +101,7 @@ bool setUsername(String _username)
     return false;
 }
 
-bool setCreds(String _ssid, String _password)
+bool WiFiManager::setCreds(String _ssid, String _password)
 {
     if (_ssid.length() < 50 && _ssid.length() > 1)
     {
@@ -113,7 +125,7 @@ bool setCreds(String _ssid, String _password)
     return false;
 }
 
-String getUsername()
+String WiFiManager::getUsername()
 {
     char username[50];
     EEPROM.begin(50);
@@ -141,6 +153,7 @@ WiFiManager::WiFiManager()
 
 void WiFiManager::accessPoint()
 {
+    DEBUG_PRINTLN("WM: Starting Access Point");
     WiFi.mode(WIFI_AP);
     IPAddress IP(192, 168, 0, 1);
     IPAddress NMask(255, 255, 255, 0);
@@ -149,10 +162,14 @@ void WiFiManager::accessPoint()
     delay(100);
 
     dnsServer.start(DNS_PORT, "*", IP);
+    DEBUG_PRINT("WM: Access Point started with IP ");
+    DEBUG_PRINTLN(WiFi.localIP());
 }
 
-void handleHome()
+void WiFiManager::handleHome()
 {
+    DEBUG_PRINT("WM: 200 - home - ");
+    DEBUG_PRINTLN(server.method());
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
@@ -163,18 +180,20 @@ void handleHome()
     server.send(200, "text/html", page);
 }
 
-void handleWiFiCreds()
+void WiFiManager::handleWiFiCreds()
 {
+    DEBUG_PRINT("WM: 200 - wifi creds - ");
+    DEBUG_PRINTLN(server.method());
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
 
     if (server.hasArg("ssid") && server.hasArg("password"))
     {
-        String ssid = server.arg("ssid");
-        String password = server.arg("password");
+        String _ssid = server.arg("ssid");
+        String _password = server.arg("password");
 
-        setCreds(ssid, password);
+        setCreds(_ssid, _password);
 
         page += FPSTR(HTTP_CREDS_SAVED);
         page += FPSTR(HTTP_END);
@@ -195,17 +214,19 @@ void handleWiFiCreds()
     }
 }
 
-void handleGitToken()
+void WiFiManager::handleGitToken()
 {
+    DEBUG_PRINT("WM: 200 - token - ");
+    DEBUG_PRINTLN(server.method());
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
 
     if (server.hasArg("token"))
     {
-        String token = server.arg("token");
+        String _token = server.arg("token");
 
-        setToken(token);
+        setToken(_token);
 
         page += FPSTR(HTTP_DETAILS_SAVED);
         page += FPSTR(HTTP_END);
@@ -226,17 +247,19 @@ void handleGitToken()
     }
 }
 
-void handleGitUsername()
+void WiFiManager::handleGitUsername()
 {
+    DEBUG_PRINT("WM: 200 - username - ");
+    DEBUG_PRINTLN(server.method());
     String page = FPSTR(HTTP_HEADER);
     page += FPSTR(HTTP_STYLE);
     page += FPSTR(HTTP_HEADER_END);
 
     if (server.hasArg("username"))
     {
-        String username = server.arg("username");
+        String _username = server.arg("username");
 
-        setUsername(username);
+        setUsername(_username);
 
         page += FPSTR(HTTP_DETAILS_SAVED);
         page += FPSTR(HTTP_END);
@@ -250,10 +273,9 @@ void handleGitUsername()
     else
     {
         page += FPSTR(HTTP_SET_USERNAME);
-        // Update old username here
-        String storedUsername = getUsername();
-        if (storedUsername.length() > 0)
-            page.replace("{v}", storedUsername);
+        String savedUsername = getUsername();
+        if (savedUsername.length() > 0)
+            page.replace("{v}", savedUsername);
         else
             page.replace("{v}", "");
         page += FPSTR(HTTP_END);
@@ -263,8 +285,10 @@ void handleGitUsername()
     }
 }
 
-void handleNotFound()
+void WiFiManager::handleNotFound()
 {
+    DEBUG_PRINT("WM: 404 - ");
+    DEBUG_PRINTLN(server.uri());
     String page = FPSTR(HTTP_HEADER);
     page.replace("Git Device", "Not Found");
     page += FPSTR(HTTP_HEADER_END);
@@ -279,6 +303,7 @@ void handleNotFound()
 
 void WiFiManager::intializeServer()
 {
+    DEBUG_PRINTLN("WM: Setting up the Server");
     server.on("/", handleHome);
     server.on("/hotspot-detect.html", handleWiFiCreds);
     server.on("/creds", handleWiFiCreds);
@@ -286,6 +311,7 @@ void WiFiManager::intializeServer()
     server.on("/username", handleGitUsername);
     server.onNotFound(handleNotFound);
     server.begin();
+    DEBUG_PRINTLN("WM: Server Started");
 }
 
 void WiFiManager::handleClient()

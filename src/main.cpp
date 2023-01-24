@@ -3,6 +3,7 @@
 #include "Display/Display.h"
 #include "Git API/GitAPI.h"
 #include "WiFi Manager/WiFiManager.h"
+#include "Debug.h"
 
 #include "Globals.h"
 
@@ -19,7 +20,11 @@ int retryCounter = 0;
 
 void setup(void)
 {
+  #ifdef DEBUG
   Serial.begin(115200);
+  delay(2000);
+  Serial.println();
+  #endif
 
   rawDisplay.begin();
 

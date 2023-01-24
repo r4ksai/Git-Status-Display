@@ -1,5 +1,6 @@
 #include "MD_MAX72xx.h"
 #include "Display.h"
+#include "Debug.h"
 
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 4 // Screens
@@ -46,6 +47,7 @@ const uint8_t DATA_WIDTH = (sizeof(pacman[0])/sizeof(pacman[0][0]));
     };
 
     void RawDisplay::begin() {
+        DEBUG_PRINTLN("D: Initializing Display");
         MD_MAX72XX::begin();
         MD_MAX72XX::control(MD_MAX72XX::INTENSITY, MAX_INTENSITY/15);
         MD_MAX72XX::control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);

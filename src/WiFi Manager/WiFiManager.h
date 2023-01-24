@@ -4,6 +4,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <EEPROM.h>
+#include <Debug.h>
 
 #define AP_SSID "Git Device"
 #define AP_PASSWORD "123456789"
@@ -23,22 +24,31 @@ const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 // TODO: Make this a Singleton
 class WiFiManager{
-    private:
-        // void handleHome();
-        // void handleGitUsername();
-        // void handleGitToken();
-        // void handleWiFiCreds();
-        // void handleNotFound();
+    protected:
         char ssid[50];
         char password[50];
         char username[50];
         char token[50];
 
+        static String getUsername();
+
+        static void handleHome();
+    private:
+        static bool setToken(String _token);
+        static bool setUsername(String _username);
+        static bool setCreds(String _ssid, String _password);
+
+        void wipeEEPROM();
+
+        static void handleGitUsername();
+        static void handleGitToken();
+        static void handleWiFiCreds();
+        static void handleNotFound();
+
         void accessPoint();
     public:
         WiFiManager();
         WiFiMode connect();
-        void wipeEEPROM();
         void intializeServer();
         void handleClient();
 };
