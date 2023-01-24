@@ -20,12 +20,7 @@ boolean showLoading = true;
 
 byte* statusBuffer;
 
-Ticker timer;
-
-void nextAnimation() {
-  if (!showLoading && rawDisplay.loading())
-  timer.detach();
-}
+WiFiMode mode;
 
 void setup(void)
 {
@@ -37,9 +32,7 @@ void setup(void)
 
   rawDisplay.begin();
 
-  timer.attach(0.1, nextAnimation);
-
-  wifiManager.connect();
+  mode = wifiManager.connect();
   wifiManager.intializeServer();
 
   statusBuffer = wifiManager.fetchData();
@@ -50,37 +43,38 @@ void loop(void)
 {
   wifiManager.handleClient();
 
-  // // No need to handle millis overflow because we are taking the difference in unsigned long
-  // unsigned long timeNow = millis();
-  // unsigned long sinceLastBreak = timeNow - lastBreak;
+  // No need to handle millis overflow because we are taking the difference in unsigned long
+  unsigned long timeNow = millis();
+  unsigned long sinceLastBreak = timeNow - lastBreak;
 
-  // // Show loading after an user specified duration
-  // showLoading = sinceLastBreak > (60000 * breakAfter);
+  // Show loading after an user specified duration
+  showLoading = sinceLastBreak > (60000 * breakAfter);
 
-  // // Display loading animation after a specified duration and complete animation before showing the status display
-  // if (loadingCounter < 2 || showLoading) {
-  //   // This variable controls animation to play till its over
-  //   if (infiniteLoading || showLoading) 
-  //   loadingCounter = 0;
+  // Display loading animation after a specified duration and complete animation before showing the status display
+  if (loadingCounter < 2 || showLoading) {
+    // This variable controls animation to play till its over
+    if (mode == WIFI_AP || showLoading) 
+    loadingCounter = 0;
 
-  //   if (!statusChecked)
-  //   {
-  //     statusChecked = true;
-  //   }
+    if (!statusChecked)
+    {
+      statusBuffer = wifiManager.fetchData();
+      statusChecked = true;
+    }
 
-  //   // Reset last break for restarting the break timer
-  //   if (sinceLastBreak > (60000 * (breakAfter + breakTime))){
-  //     statusChecked = false;
-  //     lastBreak = millis();
-  //   }
+    // Reset last break for restarting the break timer
+    if (sinceLastBreak > (60000 * (breakAfter + breakTime))){
+      statusChecked = false;
+      lastBreak = millis();
+    }
 
-  //   // Add counter when animaiton is over
-  //   boolean animtionOver = rawDisplay.loading() ? 1 : 0;
-  //   loadingCounter += animtionOver;
-  //   retryCounter += animtionOver;
-  // }
-  // else {
-  // }
+    // Add counter when animaiton is over
+    boolean animtionOver = rawDisplay.loading() ? 1 : 0;
+    loadingCounter += animtionOver;
+    retryCounter += animtionOver;
+  }
+  else {
     rawDisplay.gitStatus(statusBuffer); 
+  }
 }
 
