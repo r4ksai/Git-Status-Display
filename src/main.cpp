@@ -3,6 +3,7 @@
 #include "Display/Display.h"
 #include "WiFi Manager/WiFiManager.h"
 #include "Debug.h"
+#include <Ticker.h>
 
 RawDisplay rawDisplay = RawDisplay();
 WiFiManager wifiManager = WiFiManager();
@@ -15,7 +16,16 @@ boolean statusChecked = false;
 int loadingCounter = 0;
 int retryCounter = 0;
 
+boolean showLoading = true;
+
 byte* statusBuffer;
+
+Ticker timer;
+
+void nextAnimation() {
+  if (!showLoading && rawDisplay.loading())
+  timer.detach();
+}
 
 void setup(void)
 {
@@ -27,23 +37,25 @@ void setup(void)
 
   rawDisplay.begin();
 
+  timer.attach(0.1, nextAnimation);
+
   wifiManager.connect();
   wifiManager.intializeServer();
 
   statusBuffer = wifiManager.fetchData();
+  showLoading = false;
 }
 
 void loop(void)
 {
   wifiManager.handleClient();
-  rawDisplay.gitStatus(statusBuffer); 
 
   // // No need to handle millis overflow because we are taking the difference in unsigned long
   // unsigned long timeNow = millis();
   // unsigned long sinceLastBreak = timeNow - lastBreak;
 
   // // Show loading after an user specified duration
-  // boolean showLoading = sinceLastBreak > (60000 * breakAfter);
+  // showLoading = sinceLastBreak > (60000 * breakAfter);
 
   // // Display loading animation after a specified duration and complete animation before showing the status display
   // if (loadingCounter < 2 || showLoading) {
@@ -68,7 +80,7 @@ void loop(void)
   //   retryCounter += animtionOver;
   // }
   // else {
-  //   rawDisplay.gitStatus(7, 0, statusBuffer); // Row no, Col no, Status Array
   // }
+    rawDisplay.gitStatus(statusBuffer); 
 }
 

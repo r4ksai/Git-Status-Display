@@ -8,6 +8,8 @@
 #define DATA_PIN D7 
 #define CS_PIN   D8 
 
+#define DIMNESS 15
+
 #define CURRENT_ROW 7
 #define CURRENT_COL 0
 
