@@ -17,7 +17,11 @@ WiFiMode WiFiManager::connect()
             Serial.print("WM: - ");
             Serial.print(WiFi.SSID(l));
             Serial.print(" : ");
-            Serial.println(WiFi.RSSI(l--));
+            Serial.println(WiFi.RSSI(l));
+            if (String(ssid) == WiFi.SSID(l))
+            Serial.println("WM: WiFi Available !");
+
+            --l;
         }
     #endif
 
@@ -31,6 +35,10 @@ WiFiMode WiFiManager::connect()
     {
         // Try Connecting
         WiFi.mode(WIFI_STA);
+        // IPAddress ip(192, 168, 1, 88);
+        // IPAddress gw(192, 168, 1, 1);
+        // IPAddress sn(255, 255, 255, 0);
+        // WiFi.config(ip, gw, sn, gw);
         DEBUG_PRINT("WM: Connecting to ");
         DEBUG_PRINT(ssid);
         WiFi.begin(ssid, password);
@@ -49,6 +57,9 @@ WiFiMode WiFiManager::connect()
             retries++;
             delay(500);
         }
+
+        DEBUG_PRINT("WM: Connected with IP ");
+        DEBUG_PRINTLN(WiFi.localIP());
         return WIFI_STA;
     }
 }
@@ -165,7 +176,7 @@ void WiFiManager::accessPoint()
 
     dnsServer.start(DNS_PORT, "*", IP);
     DEBUG_PRINT("WM: Access Point started with IP ");
-    DEBUG_PRINTLN(WiFi.localIP());
+    DEBUG_PRINTLN(WiFi.softAPIP());
 }
 
 void WiFiManager::handleHome()
