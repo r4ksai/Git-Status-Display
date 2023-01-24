@@ -7,6 +7,7 @@ ESP8266WebServer server(80);
 
 WiFiMode WiFiManager::connect()
 {
+    WiFi.persistent(false);
 
     #ifdef DEBUG
         DEBUG_PRINTLN("WM: Available Networks");
@@ -35,10 +36,9 @@ WiFiMode WiFiManager::connect()
     {
         // Try Connecting
         WiFi.mode(WIFI_STA);
-        // IPAddress ip(192, 168, 1, 88);
-        // IPAddress gw(192, 168, 1, 1);
-        // IPAddress sn(255, 255, 255, 0);
-        // WiFi.config(ip, gw, sn, gw);
+        WiFi.disconnect();
+        DEBUG_PRINT("WM: WiFi Mode ");
+        DEBUG_PRINTLN(WiFi.getMode());
         DEBUG_PRINT("WM: Connecting to ");
         DEBUG_PRINT(ssid);
         WiFi.begin(ssid, password);
@@ -46,7 +46,6 @@ WiFiMode WiFiManager::connect()
         while (WiFi.status() != WL_CONNECTED)
         {
             DEBUG_PRINT(".");
-            WiFi.begin(ssid, password);
             if (retries > MAX_RETRIES)
             {
                 DEBUG_PRINTLN();

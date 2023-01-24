@@ -9,7 +9,7 @@
 #define AP_SSID "Git Device"
 #define AP_PASSWORD "123456789"
 
-#define MAX_RETRIES 20 // 500ms Delay between each tries
+#define MAX_RETRIES 200 // 500ms Delay between each tries
 
 const char HTTP_HEADER[] PROGMEM          = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>Git Device</title> <link rel=\"icon\" class=\"js-site-favicon\" type=\"image/svg+xml\" href=\"https://github.githubassets.com/favicons/favicon.svg\"> ";
 const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} h1{text-transform: uppercase;} div,input{padding:5px;font-size:1em;} input{width:95%; margin-bottom: 0.5rem;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==\") no-repeat left center;background-size: 1em;}</style>";
