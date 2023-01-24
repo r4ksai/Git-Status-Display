@@ -6,6 +6,11 @@
 #include <EEPROM.h>
 #include <Debug.h>
 
+// Web Client
+#include <ESP8266HTTPClient.h>
+#include <WiFiClientSecure.h>
+#include <Arduino_JSON.h>
+
 #define AP_SSID "Git Device"
 #define AP_PASSWORD "123456789"
 
@@ -34,6 +39,11 @@ class WiFiManager{
 
         static void handleHome();
     private:
+
+        const char* host = "https://api.github.com/graphql";
+        const int port = 443;
+        const char* fingerprint = "29 70 30 74 CA 3C 48 F5 4A 79 C6 2D 11 57 A2 41 2A 2D 7D 5C";
+
         static bool setToken(String _token);
         static bool setUsername(String _username);
         static bool setCreds(String _ssid, String _password);
@@ -51,4 +61,5 @@ class WiFiManager{
         WiFiMode connect();
         void intializeServer();
         void handleClient();
+        byte* fetchData();
 };

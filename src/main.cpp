@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "Display/Display.h"
-#include "Git API/GitAPI.h"
 #include "WiFi Manager/WiFiManager.h"
 #include "Debug.h"
 
@@ -31,15 +30,13 @@ void setup(void)
   wifiManager.connect();
   wifiManager.intializeServer();
 
-  // runServer();
-  // fetchData();
+  byte* statusBuffer = wifiManager.fetchData();
 
 }
 
 void loop(void)
 {
   wifiManager.handleClient();
-  // handleConnections();
 
   // // No need to handle millis overflow because we are taking the difference in unsigned long
   // unsigned long timeNow = millis();

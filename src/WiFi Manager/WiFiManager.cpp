@@ -57,6 +57,7 @@ WiFiMode WiFiManager::connect()
             delay(500);
         }
 
+        DEBUG_PRINTLN();
         DEBUG_PRINT("WM: Connected with IP ");
         DEBUG_PRINTLN(WiFi.localIP());
         return WIFI_STA;
@@ -331,4 +332,91 @@ void WiFiManager::handleClient()
     if (WiFi.getMode() == WIFI_AP)
         dnsServer.processNextRequest();
     server.handleClient();
+}
+
+WiFiClientSecure client;
+HTTPClient http;
+
+byte* WiFiManager::fetchData(){
+    client.setFingerprint(fingerprint);
+    http.begin(client, host);
+    http.addHeader("Content-Type", "application/graphql");
+    http.addHeader("Authorization", "bearer " + String(token));
+
+    DEBUG_PRINT("WM: Getting Git Contribution data for ");
+    DEBUG_PRINTLN(username);
+    String payload = "{\"query\": \"query {user(login: \\\"" + String(username) + "\\\") {contributionsCollection{contributionCalendar{weeks{contributionDays{contributionCount}}}}}}\"}";
+    int status = http.POST(payload);
+
+    if (status != 200)
+    {
+        DEBUG_PRINT("WM: Failed to fetch with status code ");
+        DEBUG_PRINTLN(status);
+        return NULL;
+    }
+
+    int len = http.getSize();
+    DEBUG_PRINT("WM: Response Size - ");
+    DEBUG_PRINTLN(len);
+
+    DEBUG_PRINTLN("WM: Allocating Memory in Heap for Response");
+    char* buff;
+    buff = (char*) malloc(len);
+
+    while (http.connected() && (len > 0 || len == -1)){
+
+      size_t size = client.available();
+
+      static char *buffer = buff;
+
+      if (size) {
+        int c = client.readBytes(buffer, ((size > sizeof(buff)) ? sizeof(buff) : size));
+        if (len > 0) {
+          len -= c;
+          buffer = buffer + c;
+        }
+      }
+      delay(1);
+    }
+
+    int col = 0, row = 0;
+
+    static byte statusBuffer[32] = {0};
+
+    DEBUG_PRINTLN("WM: Converting JSON to Pixels");
+    for (int i = http.getSize() - 1; i >= 0; i--){
+        char c1 = buff[i];
+        if (isDigit(c1))
+        {
+            int stat = atoi(&c1);
+
+            // Check if its a 2 digit number
+            char c2 = buff[--i];
+            int tenMultiplier = 0;
+            if (isDigit(c2))
+                tenMultiplier = atoi(&c2);
+
+            stat = stat + (tenMultiplier * 10);
+
+            if(row == 0)
+            statusBuffer[col] = stat == 0 ? 0 : 1;
+            else
+            statusBuffer[col] |= stat == 0 ? 0 : 1 << row;
+
+            row ++;
+
+            // Increment column after every 8 rows
+            if (row == 8) {
+                row = 0;
+                col ++;
+            }
+            // If more data is available, exit after the last column is done
+            if (col == 32) break;
+        }
+    }
+
+    DEBUG_PRINTLN("WM: Freeing Memory in Heap allocated for Response");
+    free(buff);
+
+    return statusBuffer;
 }
