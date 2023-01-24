@@ -4,8 +4,6 @@
 #include "WiFi Manager/WiFiManager.h"
 #include "Debug.h"
 
-#include "Globals.h"
-
 RawDisplay rawDisplay = RawDisplay();
 WiFiManager wifiManager = WiFiManager();
 
@@ -16,6 +14,8 @@ unsigned int breakTime = 1; // 1 Minute break
 boolean statusChecked = false;
 int loadingCounter = 0;
 int retryCounter = 0;
+
+byte* statusBuffer;
 
 void setup(void)
 {
@@ -30,13 +30,13 @@ void setup(void)
   wifiManager.connect();
   wifiManager.intializeServer();
 
-  byte* statusBuffer = wifiManager.fetchData();
-
+  statusBuffer = wifiManager.fetchData();
 }
 
 void loop(void)
 {
   wifiManager.handleClient();
+  rawDisplay.gitStatus(statusBuffer); 
 
   // // No need to handle millis overflow because we are taking the difference in unsigned long
   // unsigned long timeNow = millis();

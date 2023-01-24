@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
     #define DEBUG_PRINT(x) Serial.print(x)

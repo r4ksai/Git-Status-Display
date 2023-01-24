@@ -25,12 +25,12 @@
         MD_MAX72XX::clear();
 
         // Turn all led's on
-        for (uint8_t i=0; i<32; i++) MD_MAX72XX::setColumn(i, 0b11111111);
+        for (uint8_t i=0; i<32; i++) MD_MAX72XX::setColumn(i, 0);
 
         blink = false;
     }
 
-    void RawDisplay::gitStatus(int x, int y, byte status[]) {
+    void RawDisplay::gitStatus(byte status[]) {
 
         // Exit if the next frame time has not reached
         if (millis()-prevTimeAnim < BLINK_DELAY)
@@ -52,7 +52,7 @@
         // Check if the latest git dot is ON/OFF and blink the last dot in the display
         if (!(status[0] & 1))
         {
-            MD_MAX72XX::setPoint(x, y, blink);
+            MD_MAX72XX::setPoint(CURRENT_ROW, CURRENT_COL, blink);
             blink = !blink;
         }
 

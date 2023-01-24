@@ -8,6 +8,9 @@
 #define DATA_PIN D7 
 #define CS_PIN   D8 
 
+#define CURRENT_ROW 7
+#define CURRENT_COL 0
+
 // Loading Animation
 #define ANIMATION_DELAY 75	// milliseconds
 #define MAX_FRAMES      4   // number of animation frames
@@ -33,9 +36,10 @@ class RawDisplay : MD_MAX72XX {
         boolean isLoading;
 
         byte reverseByte(byte x);
+
     public:
         RawDisplay();
         bool loading();
         void begin();
-        void gitStatus(int x, int y, byte status[]);
+        void gitStatus(byte status[]);
 };
