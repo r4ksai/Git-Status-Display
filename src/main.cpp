@@ -7,6 +7,7 @@
 #include "Globals.h"
 
 RawDisplay rawDisplay = RawDisplay();
+WiFiManager wifiManager = WiFiManager();
 
 // Variables for interval checking and animation
 unsigned long lastBreak;
@@ -22,10 +23,8 @@ void setup(void)
 
   rawDisplay.begin();
 
-  Serial.println("Starting AP");
-  accessPoint();
-  Serial.println("Starting Server");
-  intializeServer();
+  wifiManager.connect();
+  wifiManager.intializeServer();
 
   // runServer();
   // fetchData();
@@ -34,7 +33,7 @@ void setup(void)
 
 void loop(void)
 {
-  handleClient();
+  wifiManager.handleClient();
   // handleConnections();
 
   // // No need to handle millis overflow because we are taking the difference in unsigned long
