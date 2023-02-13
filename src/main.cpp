@@ -1,12 +1,14 @@
 #include <Arduino.h>
 #include <SPI.h>
+#include <Ticker.h>
+
 #include "Display/Display.h"
 #include "WiFi Manager/WiFiManager.h"
 #include "Debug.h"
-#include <Ticker.h>
 
+// Managers
 RawDisplay rawDisplay = RawDisplay();
-WiFiManager wifiManager = WiFiManager();
+WiFiManager &wifiManager = WiFiManager::getInstance();
 
 // Variables for interval checking and animation
 unsigned long lastBreak;
@@ -50,12 +52,13 @@ void loop(void)
   // Show loading after an user specified duration
   showLoading = sinceLastBreak > (60000 * breakAfter);
 
-  // Display loading animation after a specified duration and complete animation before showing the status display
+  // Display loading animation after duration specified and run the animation till completion
   if (loadingCounter < 2 || showLoading) {
-    // This variable controls animation to play till its over
-    if (mode == WIFI_AP || showLoading) 
-    loadingCounter = 0;
 
+    // Infinite loading if wifi not found or if loading is manually overridden
+    if (mode == WIFI_AP || showLoading) loadingCounter = 0;
+
+        // Variable to check the git status, this gets called in the start of every break
     if (!statusChecked)
     {
       statusBuffer = wifiManager.fetchData();

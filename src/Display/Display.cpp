@@ -14,6 +14,7 @@
         control(UPDATE, ON);
         clear();
 
+        // Spashscreen will "ALL ON"
         DEBUG_PRINTLN("D: Turn all LEDs ON");
         for (uint8_t i=0; i<32; i++) setColumn(i, 0xFF);
 

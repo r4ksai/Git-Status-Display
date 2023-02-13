@@ -151,18 +151,6 @@ String WiFiManager::getUsername()
     return String(username);
 }
 
-WiFiManager::WiFiManager()
-{
-    EEPROM.begin(200);
-    for (int i = 0; i < 50; i++)
-    {
-        ssid[i] = EEPROM.read(i + 100);
-        password[i] = EEPROM.read(i + 150);
-        username[i] = EEPROM.read(i);
-        token[i] = EEPROM.read(i + 50);
-    }
-    EEPROM.end();
-}
 
 void WiFiManager::accessPoint()
 {
@@ -419,4 +407,22 @@ byte* WiFiManager::fetchData(){
     free(buff);
 
     return statusBuffer;
+}
+
+WiFiManager::WiFiManager()
+{
+    EEPROM.begin(200);
+    for (int i = 0; i < 50; i++)
+    {
+        ssid[i] = EEPROM.read(i + 100);
+        password[i] = EEPROM.read(i + 150);
+        username[i] = EEPROM.read(i);
+        token[i] = EEPROM.read(i + 50);
+    }
+    EEPROM.end();
+}
+
+WiFiManager& WiFiManager::getInstance() {
+    static WiFiManager instance = WiFiManager();
+    return instance;
 }

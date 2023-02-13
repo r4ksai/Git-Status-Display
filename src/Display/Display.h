@@ -8,12 +8,12 @@
 #define DATA_PIN D7 
 #define CS_PIN   D8 
 
-#define DIMNESS 15
+#define DIMNESS 15 // This can be a number between 1 - 15 (1 Being the brightest)
 
 #define CURRENT_ROW 7
 #define CURRENT_COL 0
 
-// Loading Animation
+// Loading Animation -> Pacman
 #define ANIMATION_DELAY 75	// milliseconds
 #define MAX_FRAMES      4   // number of animation frames
 #define BLINK_DELAY     200
@@ -34,8 +34,8 @@ class RawDisplay : MD_MAX72XX {
         int16_t idx;                // display index (column)
         uint8_t frame;              // current animation frame
         uint8_t deltaFrame;         // the animation frame offset for the next frame
-        boolean blink;
-        boolean isLoading;
+        boolean blink;              // blink state of the current day index
+        boolean isLoading;          // 
 
         byte reverseByte(byte x);
 

@@ -26,7 +26,7 @@ Here you can add your token and display username
 The token can be obtained from github
 [Token Generation](https://github.com/settings/tokens)
 
-While generating the token keep in mind that you only need ***read:user*** permission
+While generating the token keep in mind that you only need **_read:user_** permission
 
 ## Changing username
 
@@ -50,6 +50,7 @@ For removing the token you'll have to manually go and change the token to blank 
 There are files in enclosure folder that you can modify and slice with your prefered slicer and print.
 
 ## Flow Chart
+
 ```mermaid
 flowchart TD
 
