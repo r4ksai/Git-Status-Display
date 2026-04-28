@@ -2,52 +2,73 @@
 
 ![Background](Images/background.jpg)
 
-This is a display for showing GitHub Collaborations.
+ESP8266 device that shows your GitHub contribution calendar on a 4x MAX7219 LED matrix.
 
-## Setup Device
+## Hardware
 
-To install the firmware, use platformio and upload the sketch directly to the ESP8266.
+- ESP8266 (ESP-12E)
+- 4x MAX7219 LED matrix modules (32×8 total)
+- See wiring diagram below
 
-Once installed, The device will act as an access point.
+## Setup
 
-To access the access point user the password **0123456789**
+### 1. Flash firmware
 
-browse to **192.168.0.1** and add in your wifi credentials.
+```sh
+pio run --target upload
+```
 
-Once you have entered the credentials the device will restart and connect to the wifi.
+### 2. Configure WiFi
 
-Now find the IP of the device using your prefered IP scanner and access the IP on the website with an address of `/token`
-Here you can add your token and display username
+Device starts as access point **Git Device** with password **123456789**.
 
-![Git Status Display](Images/angled.jpg)
+Connect to it, browse to **192.168.0.1**, enter your WiFi credentials.
 
-## Getting a token
+Device restarts and connects to WiFi.
 
-The token can be obtained from github
-[Token Generation](https://github.com/settings/tokens)
+### 3. Configure GitHub
 
-While generating the token keep in mind that you only need **_read:user_** permission
+Find device IP (router admin page or IP scanner).
 
-## Changing username
+| Endpoint    | Purpose               |
+|-------------|-----------------------|
+| `/token`    | Set GitHub API token  |
+| `/username` | Set GitHub username   |
+| `/creds`    | Update WiFi creds     |
 
-To change the username you can go to `/username` and update the username
+### Getting a token
 
-## Reseting the device
+Generate at [github.com/settings/tokens](https://github.com/settings/tokens)
 
-To reset the device you can go to `/reset` and this automatically removes the wifi credentials.
-For removing the token you'll have to manually go and change the token to blank space
+Required permission: **`read:user`** only.
+
+> Both classic (40 chars) and fine-grained (up to 93 chars) tokens supported.
+
+## Resetting the device
+
+To reset WiFi credentials, wipe EEPROM by re-flashing or submitting blank credentials via `/creds`.
+
+> `/reset` endpoint is not implemented — use `/creds` to reconfigure.
 
 ![Git Status Display Loading](Images/zoomed.jpg)
+
+![Git Status Display](Images/angled.jpg)
 
 ## Wiring
 
 ![Wiring Diagram](Images/wiring_diagram.png)
 
+| ESP8266 | MAX7219 |
+|---------|---------|
+| D5      | CLK     |
+| D7      | DATA    |
+| D8      | CS      |
+
 ## Enclosure
 
 ![Enclosure](Images/enclosure.png)
 
-There are files in enclosure folder that you can modify and slice with your prefered slicer and print.
+3D files in `/Enclosure`. Slice and print.
 
 ## Flow Chart
 

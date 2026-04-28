@@ -16,7 +16,6 @@ unsigned int breakAfter = 10; // 10 Minutes interval
 unsigned int breakTime = 1; // 1 Minute break
 boolean statusChecked = false;
 int loadingCounter = 0;
-int retryCounter = 0;
 
 boolean showLoading = true;
 
@@ -72,12 +71,12 @@ void loop(void)
     }
 
     // Add counter when animaiton is over
-    boolean animtionOver = rawDisplay.loading() ? 1 : 0;
-    loadingCounter += animtionOver;
-    retryCounter += animtionOver;
+    boolean animationOver = rawDisplay.loading() ? 1 : 0;
+    loadingCounter += animationOver;
   }
   else {
-    rawDisplay.gitStatus(statusBuffer); 
+    if (statusBuffer != NULL)
+      rawDisplay.gitStatus(statusBuffer);
   }
 }
 

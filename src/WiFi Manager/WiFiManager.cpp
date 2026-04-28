@@ -67,8 +67,8 @@ WiFiMode WiFiManager::connect()
 void WiFiManager::wipeEEPROM()
 {
     DEBUG_PRINTLN("WM: Wiping EEPROM");
-    EEPROM.begin(200);
-    for (int i = 0; i < 200; i++)
+    EEPROM.begin(EEPROM_SIZE);
+    for (int i = 0; i < EEPROM_SIZE; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -78,15 +78,12 @@ void WiFiManager::wipeEEPROM()
 
 bool WiFiManager::setToken(String _token)
 {
-    if (_token.length() < 50)
+    if (_token.length() <= TOKEN_MAX_LEN)
     {
-        EEPROM.begin(200);
-        for (unsigned int i = 0; i < 50; i++)
+        EEPROM.begin(EEPROM_SIZE);
+        for (unsigned int i = 0; i < TOKEN_MAX_LEN; i++)
         {
-            if (i < _token.length())
-                EEPROM.write(i + 50, _token[i]);
-            else
-                EEPROM.write(i + 50, 0);
+            EEPROM.write(EEPROM_TOKEN + i, i < _token.length() ? _token[i] : 0);
         }
         EEPROM.commit();
         EEPROM.end();
@@ -97,15 +94,12 @@ bool WiFiManager::setToken(String _token)
 
 bool WiFiManager::setUsername(String _username)
 {
-    if (_username.length() < 50)
+    if (_username.length() < EEPROM_FIELD_LEN)
     {
-        EEPROM.begin(200);
-        for (unsigned int i = 0; i < 50; i++)
+        EEPROM.begin(EEPROM_SIZE);
+        for (unsigned int i = 0; i < EEPROM_FIELD_LEN; i++)
         {
-            if (i < _username.length())
-                EEPROM.write(i, _username[i]);
-            else
-                EEPROM.write(i, 0);
+            EEPROM.write(EEPROM_USERNAME + i, i < _username.length() ? _username[i] : 0);
         }
         EEPROM.commit();
         EEPROM.end();
@@ -116,20 +110,13 @@ bool WiFiManager::setUsername(String _username)
 
 bool WiFiManager::setCreds(String _ssid, String _password)
 {
-    if (_ssid.length() < 50 && _ssid.length() > 1)
+    if (_ssid.length() > 1 && _ssid.length() < EEPROM_FIELD_LEN)
     {
-        EEPROM.begin(200);
-        for (unsigned int i = 0; i < 50; i++)
+        EEPROM.begin(EEPROM_SIZE);
+        for (unsigned int i = 0; i < EEPROM_FIELD_LEN; i++)
         {
-            if (i < _ssid.length())
-                EEPROM.write(i + 100, _ssid[i]);
-            else
-                EEPROM.write(i + 100, 0);
-
-            if (i < _password.length())
-                EEPROM.write(i + 150, _password[i]);
-            else
-                EEPROM.write(i + 150, 0);
+            EEPROM.write(EEPROM_SSID     + i, i < _ssid.length()     ? _ssid[i]     : 0);
+            EEPROM.write(EEPROM_PASSWORD + i, i < _password.length() ? _password[i] : 0);
         }
         EEPROM.commit();
         EEPROM.end();
@@ -140,14 +127,13 @@ bool WiFiManager::setCreds(String _ssid, String _password)
 
 String WiFiManager::getUsername()
 {
-    char username[50];
-    EEPROM.begin(50);
-    for (unsigned int i = 0; i < 50; i++)
+    char username[EEPROM_FIELD_LEN];
+    EEPROM.begin(EEPROM_SIZE);
+    for (unsigned int i = 0; i < EEPROM_FIELD_LEN; i++)
     {
-        username[i] = EEPROM.read(i);
+        username[i] = EEPROM.read(EEPROM_USERNAME + i);
     }
     EEPROM.end();
-
     return String(username);
 }
 
@@ -299,7 +285,7 @@ void WiFiManager::handleNotFound()
     Serial.println(server.uri());
 
     server.sendHeader("Content-Length", String(page.length()));
-    server.send(200, "text/html", page);
+    server.send(404, "text/html", page);
 }
 
 void WiFiManager::intializeServer()
@@ -326,7 +312,10 @@ WiFiClientSecure client;
 HTTPClient http;
 
 byte* WiFiManager::fetchData(){
-    client.setFingerprint(fingerprint);
+    // Fingerprint-based verification breaks whenever GitHub rotates their cert.
+    // On ESP8266 without a full CA bundle, setInsecure() is the practical tradeoff
+    // for a read-only personal device with no sensitive writes.
+    client.setInsecure();
     http.begin(client, host);
     http.addHeader("Content-Type", "application/graphql");
     http.addHeader("Authorization", "bearer " + String(token));
@@ -344,35 +333,37 @@ byte* WiFiManager::fetchData(){
     }
 
     int len = http.getSize();
+    int totalLen = len;
     DEBUG_PRINT("WM: Response Size - ");
     DEBUG_PRINTLN(len);
 
     DEBUG_PRINTLN("WM: Allocating Memory in Heap for Response");
-    char* buff;
-    buff = (char*) malloc(len);
+    char* buff = (char*) malloc(len + 1);
+    if (!buff) {
+        http.end();
+        return NULL;
+    }
 
+    char *buffer = buff;
     while (http.connected() && (len > 0 || len == -1)){
-
       size_t size = client.available();
-
-      static char *buffer = buff;
-
       if (size) {
-        int c = client.readBytes(buffer, ((size > sizeof(buff)) ? sizeof(buff) : size));
+        int c = client.readBytes(buffer, size);
         if (len > 0) {
           len -= c;
-          buffer = buffer + c;
+          buffer += c;
         }
       }
       delay(1);
     }
+    buff[totalLen] = '\0';
 
     int col = 0, row = 0;
 
     static byte statusBuffer[32] = {0};
 
     DEBUG_PRINTLN("WM: Converting JSON to Pixels");
-    for (int i = http.getSize() - 1; i >= 0; i--){
+    for (int i = totalLen - 1; i >= 0; i--){
         char c1 = buff[i];
         if (isDigit(c1))
         {
@@ -411,14 +402,18 @@ byte* WiFiManager::fetchData(){
 
 WiFiManager::WiFiManager()
 {
-    EEPROM.begin(200);
-    for (int i = 0; i < 50; i++)
+    EEPROM.begin(EEPROM_SIZE);
+    for (int i = 0; i < EEPROM_FIELD_LEN; i++)
     {
-        ssid[i] = EEPROM.read(i + 100);
-        password[i] = EEPROM.read(i + 150);
-        username[i] = EEPROM.read(i);
-        token[i] = EEPROM.read(i + 50);
+        ssid[i]     = EEPROM.read(EEPROM_SSID     + i);
+        password[i] = EEPROM.read(EEPROM_PASSWORD + i);
+        username[i] = EEPROM.read(EEPROM_USERNAME + i);
     }
+    for (int i = 0; i < TOKEN_MAX_LEN; i++)
+    {
+        token[i] = EEPROM.read(EEPROM_TOKEN + i);
+    }
+    token[TOKEN_MAX_LEN] = '\0';
     EEPROM.end();
 }
 
