@@ -323,7 +323,11 @@ HTTPClient http;
 
 byte* WiFiManager::fetchData(){
     client.setFingerprint(fingerprint);
-    http.begin(client, host);
+    if (!http.begin(client, host))
+    {
+        DEBUG_PRINTLN("WM: Failed to initialize HTTP client");
+        return nullptr;
+    }
     http.addHeader("Content-Type", "application/graphql");
     http.addHeader("Authorization", "bearer " + String(token));
 
@@ -336,31 +340,46 @@ byte* WiFiManager::fetchData(){
     {
         DEBUG_PRINT("WM: Failed to fetch with status code ");
         DEBUG_PRINTLN(status);
-        return NULL;
+        http.end();
+        return nullptr;
     }
 
     DEBUG_PRINT("WM: Response Size - ");
     DEBUG_PRINTLN(http.getSize());
 
     String response = http.getString();
-    int responseLen = response.length();
+    http.end();
 
-    int col = 0, row = 0;
+    JSONVar data = JSON.parse(response);
+    if (JSON.typeof(data) == "undefined")
+    {
+        DEBUG_PRINTLN("WM: Failed to parse GitHub response");
+        return nullptr;
+    }
+
+    JSONVar weeks = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]["weeks"];
+    if (JSON.typeof(weeks) != "array")
+    {
+        DEBUG_PRINTLN("WM: Missing contribution weeks in GitHub response");
+        return nullptr;
+    }
+
+    int col = 0;
+    int row = 0;
 
     static byte statusBuffer[32] = {0};
     memset(statusBuffer, 0, sizeof(statusBuffer));
 
     DEBUG_PRINTLN("WM: Converting JSON to Pixels");
-    for (int i = responseLen - 1; i >= 0; i--) {
-        char c = response[i];
-        if (isDigit(c)) {
-            int stat = c - '0';
-            int multiplier = 10;
-            while (i > 0 && isDigit(response[i - 1])) {
-                --i;
-                stat += (response[i] - '0') * multiplier;
-                multiplier *= 10;
-            }
+    for (int weekIndex = weeks.length() - 1; weekIndex >= 0 && col < 32; weekIndex--)
+    {
+        JSONVar contributionDays = weeks[weekIndex]["contributionDays"];
+        if (JSON.typeof(contributionDays) != "array")
+            continue;
+
+        for (int dayIndex = contributionDays.length() - 1; dayIndex >= 0 && col < 32; dayIndex--)
+        {
+            int stat = int(contributionDays[dayIndex]["contributionCount"]);
 
             if (row == 0)
                 statusBuffer[col] = stat == 0 ? 0 : 1;
@@ -369,11 +388,11 @@ byte* WiFiManager::fetchData(){
 
             row++;
 
-            if (row == 8) {
+            if (row == 8)
+            {
                 row = 0;
                 col++;
             }
-            if (col == 32) break;
         }
     }
 
