@@ -13,16 +13,14 @@ WiFiMode WiFiManager::connect()
         DEBUG_PRINTLN("WM: Available Networks");
         DEBUG_PRINTLN("WM: ------------------");
         int l = WiFi.scanNetworks();
-        while (l != 0)
+        for (int i = 0; i < l; i++)
         {
-            Serial.print("WM: - ");
-            Serial.print(WiFi.SSID(l));
-            Serial.print(" : ");
-            Serial.println(WiFi.RSSI(l));
-            if (String(ssid) == WiFi.SSID(l))
-            Serial.println("WM: WiFi Available !");
-
-            --l;
+            DEBUG_PRINT("WM: - ");
+            DEBUG_PRINT(WiFi.SSID(i));
+            DEBUG_PRINT(" : ");
+            DEBUG_PRINTLN(WiFi.RSSI(i));
+            if (String(ssid) == WiFi.SSID(i))
+                DEBUG_PRINTLN("WM: WiFi Available !");
         }
     #endif
 
@@ -42,7 +40,7 @@ WiFiMode WiFiManager::connect()
         DEBUG_PRINT("WM: Connecting to ");
         DEBUG_PRINT(ssid);
         WiFi.begin(ssid, password);
-        uint8 retries = 0;
+        uint8_t retries = 0;
         while (WiFi.status() != WL_CONNECTED)
         {
             DEBUG_PRINT(".");
@@ -296,13 +294,11 @@ void WiFiManager::handleNotFound()
     page += FPSTR("Not Found");
     page += FPSTR(HTTP_END);
 
-    Serial.println(server.uri());
-
     server.sendHeader("Content-Length", String(page.length()));
-    server.send(200, "text/html", page);
+    server.send(404, "text/html", page);
 }
 
-void WiFiManager::intializeServer()
+void WiFiManager::initializeServer()
 {
     DEBUG_PRINTLN("WM: Setting up the Server");
     server.on("/", handleHome);
@@ -343,68 +339,43 @@ byte* WiFiManager::fetchData(){
         return NULL;
     }
 
-    int len = http.getSize();
     DEBUG_PRINT("WM: Response Size - ");
-    DEBUG_PRINTLN(len);
+    DEBUG_PRINTLN(http.getSize());
 
-    DEBUG_PRINTLN("WM: Allocating Memory in Heap for Response");
-    char* buff;
-    buff = (char*) malloc(len);
-
-    while (http.connected() && (len > 0 || len == -1)){
-
-      size_t size = client.available();
-
-      static char *buffer = buff;
-
-      if (size) {
-        int c = client.readBytes(buffer, ((size > sizeof(buff)) ? sizeof(buff) : size));
-        if (len > 0) {
-          len -= c;
-          buffer = buffer + c;
-        }
-      }
-      delay(1);
-    }
+    String response = http.getString();
+    int responseLen = response.length();
 
     int col = 0, row = 0;
 
     static byte statusBuffer[32] = {0};
+    memset(statusBuffer, 0, sizeof(statusBuffer));
 
     DEBUG_PRINTLN("WM: Converting JSON to Pixels");
-    for (int i = http.getSize() - 1; i >= 0; i--){
-        char c1 = buff[i];
-        if (isDigit(c1))
-        {
-            int stat = atoi(&c1);
+    for (int i = responseLen - 1; i >= 0; i--) {
+        char c = response[i];
+        if (isDigit(c)) {
+            int stat = c - '0';
+            int multiplier = 10;
+            while (i > 0 && isDigit(response[i - 1])) {
+                --i;
+                stat += (response[i] - '0') * multiplier;
+                multiplier *= 10;
+            }
 
-            // Check if its a 2 digit number
-            char c2 = buff[--i];
-            int tenMultiplier = 0;
-            if (isDigit(c2))
-                tenMultiplier = atoi(&c2);
-
-            stat = stat + (tenMultiplier * 10);
-
-            if(row == 0)
-            statusBuffer[col] = stat == 0 ? 0 : 1;
+            if (row == 0)
+                statusBuffer[col] = stat == 0 ? 0 : 1;
             else
-            statusBuffer[col] |= stat == 0 ? 0 : 1 << row;
+                statusBuffer[col] |= stat == 0 ? 0 : 1 << row;
 
-            row ++;
+            row++;
 
-            // Increment column after every 8 rows
             if (row == 8) {
                 row = 0;
-                col ++;
+                col++;
             }
-            // If more data is available, exit after the last column is done
             if (col == 32) break;
         }
     }
-
-    DEBUG_PRINTLN("WM: Freeing Memory in Heap allocated for Response");
-    free(buff);
 
     return statusBuffer;
 }

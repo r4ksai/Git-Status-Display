@@ -11,16 +11,15 @@ RawDisplay rawDisplay = RawDisplay();
 WiFiManager &wifiManager = WiFiManager::getInstance();
 
 // Variables for interval checking and animation
-unsigned long lastBreak;
+unsigned long lastBreak = 0;
 unsigned int breakAfter = 10; // 10 Minutes interval
 unsigned int breakTime = 1; // 1 Minute break
 boolean statusChecked = false;
 int loadingCounter = 0;
-int retryCounter = 0;
 
 boolean showLoading = true;
 
-byte* statusBuffer;
+byte* statusBuffer = nullptr;
 
 WiFiMode mode;
 
@@ -35,9 +34,10 @@ void setup(void)
   rawDisplay.begin();
 
   mode = wifiManager.connect();
-  wifiManager.intializeServer();
+  wifiManager.initializeServer();
 
   statusBuffer = wifiManager.fetchData();
+  lastBreak = millis();
   showLoading = false;
 }
 
@@ -71,13 +71,12 @@ void loop(void)
       lastBreak = millis();
     }
 
-    // Add counter when animaiton is over
-    boolean animtionOver = rawDisplay.loading() ? 1 : 0;
-    loadingCounter += animtionOver;
-    retryCounter += animtionOver;
+    // Add counter when animation is over
+    boolean animationOver = rawDisplay.loading();
+    loadingCounter += animationOver ? 1 : 0;
   }
-  else {
-    rawDisplay.gitStatus(statusBuffer); 
+  else if (statusBuffer != nullptr) {
+    rawDisplay.gitStatus(statusBuffer);
   }
 }
 
